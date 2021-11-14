@@ -1,7 +1,8 @@
 %QRS detection%
+%See added text/PDF for info of the nature of the recording
 %import raw data
 clear all; clc;
-data = fopen('Hila&Ilay.txt','rt');
+data = fopen('Recording1.txt','rt');
 A = textscan(data, '%f%f%f', 'MultipleDelimsAsOne',true, 'Delimiter','[;', 'HeaderLines',1);
 time_vec=[0:length(A{1})-1]/500;
 fclose(data);
@@ -37,6 +38,7 @@ plot(time_vec,A{3});legend('filtered','unfiltered');xlabel('Time(sec)');
 ylabel('Amplitude(mV)');title('Lead II');
 %%
 %ECG fourier tranform
+%Code is clumsy because it's not our code =]
 L=length(A{1});
 lead_1_fourier=fft(A{1});filt_lead_1_fourier=fft(filt_lead_1);
 lead_3_fourier=fft(A{2});filt_lead_3_fourier=fft(filt_lead_3);
@@ -63,11 +65,12 @@ ylabel('Amplitude(mV)');title('Lead II');
 
 %%
 %QRS recognition- AF2
+%See article: "A comparison of the Noise sensitivity of Nine QRS Detection Algorithms- Gary M. Friesen, Thomas C. Jannett"
 %only one lead is required, Lead II was chosen
-thresh1=0.4*max(filt_lead_1);thresh3=0.4*max(filt_lead_3);thresh2=0.4*max(filt_lead_2);%setting thresh
-Y0_1=abs(filt_lead_1);Y0_2=abs(filt_lead_2);Y0_3=abs(filt_lead_3);%taking the absolute val of signal
+thresh1=0.4*max(filt_lead_1);thresh3=0.4*max(filt_lead_3);thresh2=0.4*max(filt_lead_2);                 %Setting threshold
+Y0_1=abs(filt_lead_1);Y0_2=abs(filt_lead_2);Y0_3=abs(filt_lead_3);                                      %Taking the absolute value of the signal
 Y1_1=zeros(length(filt_lead_2),1);Y1_2=zeros(length(filt_lead_2),1);Y1_3=zeros(length(filt_lead_2),1);
-%condition 1 of AF2 algorithm
+%Condition 1 of AF2 algorithm
 for i=1:length(filt_lead_1)
     if filt_lead_1(i)>=thresh1  
         Y1_1(i)=Y0_1(i);
@@ -89,17 +92,17 @@ for i=1:length(filt_lead_3)
         Y1_3(i)=thresh3;
     end
 end
-%derivative of the signal after condition 1
+%Derivative of the signal after condition 1
 Y2_1=diff(Y1_1);Y2_2=diff(Y1_2);Y2_3=diff(Y1_3);
-%condition 2 of AF2 algorithm, different threshold was set then the
-%original algorithm, appropriate to our signal
+%Condition 2 of AF2 algorithm, different threshold was set then the
+%original algorithm(original is 0.7), appropriate to our signal
 figure(4);
 for j=1:length(Y2_2)
     if Y2_2(j)<0.3*max(Y2_2)  %QRS candidates are set
         Y2_2(j)=0;
     end
 end
-%taking the local maximum from candidates gives us the extract high peaks of
+%Taking the local maximum from candidates gives us the extract high peaks of
 %candidates
 Y2_2=islocalmax(Y2_2);m=[];
 for j=1:length(Y2_2)
@@ -111,7 +114,7 @@ plot(time_vec,A{3},m/500,ones(length(m),1)./2.1,'o');
 xline([30 40],'-',{'Standing','Standing & Deep Breaths'});
 xlabel('Time(sec)');ylabel('Amplitude(mV)');title('Lead II with QRS');
 %%
-%confusion matrix
+%Confusion matrix
 pred=zeros(length(A{1}),1);true=zeros(length(A{1}),1);
 for i=1:length(m)
     pred(m(i))=1;
@@ -124,8 +127,8 @@ title('Confusion Matrix: AF2 QRS detection algorithm')
 set(gca,'FontSize',30);
 %%
 %HR
-m(end+1)=17414;m(end+1)=21292;
-m=sort(m);%QRS who werent detected added manually to compute HR
+m(end+1)=17414;m(end+1)=21292;               %QRS who weren't detected added manually to compute HR
+m=sort(m);
 g1=Y2_2(1:15000);g2=Y2_2(1:20000);g3=Y2_2;
 g1=sum(g1);g2=sum(g2);g3=sum(g3);
 m1=m(1:g1);m2=m(g1+1:g2);m3=m(g2+1:g3);
