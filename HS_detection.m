@@ -1,13 +1,15 @@
 % HS detection %
+%Based on code of another student inn an earlier year.
+%Thank you!
 % import data
 clear all; clc;
-data = fopen('Hila&Ilay_part_c.txt','rt');
+data = fopen('Recording3.txt','rt');
 C = textscan(data, '%f%f%f', 'MultipleDelimsAsOne',true, 'Delimiter','[;', 'HeaderLines',1);
 fclose(data); s_r = 500; dt = 1/500;
 time_vec = [0:length(C{1})-1]/s_r; fc = 8; fc2 = 50; fs = length(C{1})/30;
-b1 = fir1(48,[fc/(fs/2) fc2/(fs/2)],'bandpass'); a=1; %define filter for ECG
+b1 = fir1(48,[fc/(fs/2) fc2/(fs/2)],'bandpass'); a=1; %Define filter for ECG
 fc = 50; fc2 = 220; fs = length(C{1})/30;
-b2 = fir1(48,[fc/(fs/2) fc2/(fs/2)],'bandpass'); a=1; %define filter for HS
+b2 = fir1(48,[fc/(fs/2) fc2/(fs/2)],'bandpass'); a=1; %Define filter for HS
 %%
 % graphs for intuition
 figure(1);
@@ -29,7 +31,7 @@ ECG_active = ecg_filt(20*s_r+1:end);
 hs_rest_norm = hs_rest./max(hs_rest);
 hs_active_norm = hs_active./max(hs_active);
 %%
-% signal energy
+% Signal Shannon Entropy
 for i = 1:length(hs_rest_norm)
     Ehs_rest(i) = -((hs_rest_norm(i))^2)*(log((hs_rest_norm(i))^2));
 end
@@ -91,6 +93,7 @@ end
 peaks_rest = zeros(size(Ehs_rest));
 peaks_active = zeros(size(Ehs_active));
 
+%Threshold that isolates high energy parts from low energy parts
 for i = 1:length(Ehs_rest)
     if Ehs_rest(i) >= 0.2 * max(Ehs_rest)
         peaks_rest(i) = 1;
@@ -108,6 +111,9 @@ for i = 1:length(Ehs_active)
 end
 
 %%
+%Looking for high energy part in the physiological time window, appropriate
+%to each QRS detected, respectively.
+
 % rest
 s1_idx_rest = zeros(1, length(hs_rest));
 s1_val_rest = zeros(1, length(hs_rest));
@@ -209,8 +215,8 @@ xlabel('Time [sec]'); ylabel('Voltage [mV]'); title('ECG Signal - Active'); xlim
 
 legend('Lead I'); 
 
-%% table
-
+%% Table
+%See table in the attached text file.
 %rest
 BPM_rest = time_vec(m_rest); 
 BPM_rest = diff(BPM_rest);
