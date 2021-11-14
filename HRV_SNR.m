@@ -1,15 +1,18 @@
 %HRV&SNR%
+%In this part, a 50 sec recording was made, while subject is sitting and calm.
+%See added file for more info.
+%See article: "A comparison of the Noise sensitivity of Nine QRS Detection Algorithms- Gary M. Friesen, Thomas C. Jannett"
 %import raw data
 clear all; clc;
-data = fopen('Hila&Ilay_part_b.txt','rt');
+data = fopen('recording2.txt','rt');
 B = textscan(data, '%f%f%f', 'MultipleDelimsAsOne',true, 'Delimiter','[;', 'HeaderLines',1);
 fclose(data);
 time_vec=[0:length(B{1})-1]/500;fc = 8;fc2=50;fs=length(B{1})/60.244;
-b=fir1(48,[fc/(fs/2) fc2/(fs/2)],'bandpass');a=1;%define filter
+b=fir1(48,[fc/(fs/2) fc2/(fs/2)],'bandpass');a=1;    %Define filter
 %%
-%finding QRS for later analysis- Lead I
-%using algorithm from "QRS detection"-AF2
-filt_lead_1=filter(b,a,B{1});thresh1=0.4*max(filt_lead_1);
+%Finding QRS for later analysis- Lead I
+%Using algorithm from "QRS detection"-AF2
+filt_lead_1=filter(b,a,B{1});thresh1=0.4*max(filt_lead_1);  %Filtering and defining threshold
 Y0_1=abs(filt_lead_1);Y1_1=zeros(length(filt_lead_1),1);
 for i=1:length(filt_lead_1)
     if filt_lead_1(i)>=thresh1  
@@ -66,7 +69,7 @@ std_volt_last = std(HRV_cell{64}(185:225));
 
 %%
 %SNR
-% mean signal vs. first signal
+%mean signal vs. first signal
 mean_max_std = max(mean_sig)/std_volt_mean;
 first_max_std = max(HRV_cell{1})/std_volt_first;
 
